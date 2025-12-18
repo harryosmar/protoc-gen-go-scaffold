@@ -1,0 +1,31 @@
+package {{.Package}}_usecase
+
+import (
+	"context"
+
+	"{{.ProtoPkg}}"
+)
+
+// {{.Service.GoName}}Usecase defines the business logic interface
+type {{.Service.GoName}}Usecase interface {
+	{{range .Service.Methods}}{{.GoName}}(context.Context, *{{.Input.GoIdent.GoName}}) (*{{.Output.GoIdent.GoName}}, error)
+	{{end}}
+}
+
+// {{initialLower .Service.GoName}}Usecase implements the usecase interface
+type {{initialLower .Service.GoName}}Usecase struct {
+	repo {{.Service.GoName}}Repository
+}
+
+// New{{.Service.GoName}}Usecase creates a new usecase instance
+func New{{.Service.GoName}}Usecase(repo {{.Service.GoName}}Repository) {{.Service.GoName}}Usecase {
+	return &{{initialLower .Service.GoName}}Usecase{repo: repo}
+}
+
+{{range .Service.Methods}}
+// {{.GoName}} executes the business logic for {{.GoName}}
+func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Context, req *{{.Input.GoIdent.GoName}}) (*{{.Output.GoIdent.GoName}}, error) {
+	// Add business logic here (validation, orchestration)
+	return u.repo.{{.GoName}}(ctx, req)
+}
+{{end}}

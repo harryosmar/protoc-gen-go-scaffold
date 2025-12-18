@@ -1,0 +1,25 @@
+package {{.Package}}_service
+
+import (
+	"context"
+
+	"{{.ProtoPkg}}"
+)
+
+// {{.Service.GoName}}Service implements the gRPC service interface
+type {{.Service.GoName}}Service struct {
+	usecase {{.Service.GoName}}Usecase
+}
+
+// New{{.Service.GoName}}Service creates a new service instance
+func New{{.Service.GoName}}Service(usecase {{.Service.GoName}}Usecase) *{{.Service.GoName}}Service {
+	return &{{.Service.GoName}}Service{usecase: usecase}
+}
+
+{{range .Service.Methods}}
+// {{.GoName}} handles the {{.GoName}} RPC method
+func (s *{{$.Service.GoName}}Service) {{.GoName}}(ctx context.Context, req *{{.Input.GoIdent.GoName}}) (*{{.Output.GoIdent.GoName}}, error) {
+	// Add service-specific logic here (validation, transformation)
+	return s.usecase.{{.GoName}}(ctx, req)
+}
+{{end}}
