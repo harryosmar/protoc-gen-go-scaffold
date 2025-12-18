@@ -1,0 +1,29 @@
+package handler
+
+import (
+    "context"
+    userpb "github.com/harryosmar/protobuf-go/gen/user"
+    "{{.Base}}/repository"
+    proto "{{.ProtoPkg}}"
+)
+
+type {{.Service.GoName}}Handler interface {
+    {{- range .Service.Methods}}
+    {{.GoName}}(context.Context, *proto.{{.Input.GoIdent.GoName}}) (*proto.{{.Output.GoIdent.GoName}}, error)
+    {{- end}}
+}
+
+type {{initialLower .Service.GoName}}Handler struct {
+    userpb.UnimplementedUserServiceServer
+    repo repository.{{.Service.GoName}}Repository
+}
+
+func New{{.Service.GoName}}Handler(repo repository.{{.Service.GoName}}Repository) {{.Service.GoName}}Handler {
+    return &{{initialLower .Service.GoName}}Handler{repo: repo}
+}
+
+{{range .Service.Methods}}
+func (u *{{initialLower $.Service.GoName}}Handler) {{.GoName}}(ctx context.Context, req *proto.{{.Input.GoIdent.GoName}}) (*proto.{{.Output.GoIdent.GoName}}, error) {
+    return u.repo.{{.GoName}}(ctx, req)
+}
+{{end}}

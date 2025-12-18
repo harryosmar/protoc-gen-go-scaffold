@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package handler;
+
+option go_package = "github.com/harryosmar/protoc-gen-go-scaffold/testgen";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+message CreateUserResponse {
+  int64 id = 1;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message GetUserResponse {
+  string name = 1;
+  string email = 2;
+}

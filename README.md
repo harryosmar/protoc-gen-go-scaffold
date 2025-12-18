@@ -16,6 +16,13 @@ A Protocol Buffers compiler plugin that automatically generates a clean architec
 go build -o $GOPATH/bin/protoc-gen-go-scaffold
 ```
 
+## Test
+
+```bash
+# go test -v -run TestServiceGeneration ./... 
+go test -count=1  -v -run TestServiceGeneration ./test 
+```
+
 ## Installation
 
 ```bash
