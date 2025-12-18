@@ -1,33 +1,27 @@
-package {{.Package}}_repository
+package repository
 
 import (
-	"context"
-
-	"{{.ProtoPkg}}"
+    "context"
+    proto "{{.ProtoPkg}}"
+    "{{.Module}}/repository"
 )
 
-// {{.Service.GoName}}Repository defines the data access interface
 type {{.Service.GoName}}Repository interface {
-	{{range .Service.Methods}}{{.GoName}}(context.Context, *{{.Input.GoIdent.GoName}}) (*{{.Output.GoIdent.GoName}}, error)
-	{{end}}
+    {{- range .Service.Methods}}
+    {{.GoName}}(context.Context, *proto.{{.Input.GoIdent.GoName}}) (*proto.{{.Output.GoIdent.GoName}}, error)
+    {{- end}}
 }
 
-// {{initialLower .Service.GoName}}Repository implements the repository interface
-type {{initialLower .Service.GoName}}Repository struct {
-	// Add data source dependencies (e.g., *gorm.DB, *mongo.Client)
+type {{initialLower .Service.GoName}}Usecase struct {
+    repo repository.{{.Service.GoName}}Repository
 }
 
-// New{{.Service.GoName}}Repository creates a new repository instance
-func New{{.Service.GoName}}Repository(/* dependencies */) {{.Service.GoName}}Repository {
-	return &{{initialLower .Service.GoName}}Repository{
-		// Initialize dependencies
-	}
+func New{{.Service.GoName}}Usecase(repo repository.{{.Service.GoName}}Repository) {{.Service.GoName}}Usecase {
+    return &{{initialLower .Service.GoName}}Usecase{repo: repo}
 }
 
 {{range .Service.Methods}}
-// {{.GoName}} handles data access for {{.GoName}}
-func (r *{{initialLower $.Service.GoName}}Repository) {{.GoName}}(ctx context.Context, req *{{.Input.GoIdent.GoName}}) (*{{.Output.GoIdent.GoName}}, error) {
-	// Implement data access logic (DB operations, cache, etc.)
-	return &{{.Output.GoIdent.GoName}}{}, nil
+func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Context, req *proto.{{.Input.GoIdent.GoName}}) (*proto.{{.Output.GoIdent.GoName}}, error) {
+    return u.repo.{{.GoName}}(ctx, req)
 }
 {{end}}
