@@ -187,6 +187,7 @@ func generateLayer(
 
 	// Template data
 	data := struct {
+		Filename     string
 		Package      string
 		Service      *protogen.Service
 		ProtoPkg     string // e.g., "github.com/.../gen/hello"

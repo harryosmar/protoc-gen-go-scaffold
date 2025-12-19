@@ -19,7 +19,7 @@ go build -o $GOPATH/bin/protoc-gen-go-scaffold
 ## Test
 
 ```bash
-# go test -v -run TestServiceGeneration ./... 
+# go test -v -run test/TestServiceGeneration ./... 
 go test -count=1  -v -run TestServiceGeneration ./test 
 ```
 

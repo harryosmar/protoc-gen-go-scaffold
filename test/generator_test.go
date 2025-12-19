@@ -42,7 +42,7 @@ func TestServiceGeneration(t *testing.T) {
 		"--plugin=protoc-gen-go-scaffold="+pluginPath,
 		"--proto_path=",
 		"--proto_path="+tmpDir,
-		"--go-scaffold_out=base=github.com/harryosmar/protoc-gen-go-scaffold,paths=source_relative:"+tmpDir,
+		"--go-scaffold_out=base=github.com/harryosmar/protobuf-go,paths=source_relative:"+tmpDir,
 		filepath.Base(tmpProto),
 	)
 	cmd.Dir = tmpDir
