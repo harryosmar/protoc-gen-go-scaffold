@@ -57,21 +57,21 @@ func main() {
 			for _, service := range f.Services {
 				// Generate SERVICE layer
 				if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
-					"server.tmpl", "server", ".go"); err != nil {
+					"server.tmpl", "server", "_server.go"); err != nil {
 					return err
 				}
 
-				// Uncomment when templates ready:
 				// Generate USECASE layer
-				// if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
-				//     "usecase.tmpl", "usecase", "_usecase.go"); err != nil {
-				//     return err
-				// }
-				// Generate REPOSITORY layer
-				// if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
-				//     "repository.tmpl", "repository", "_repository.go"); err != nil {
-				//     return err
-				// }
+				if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
+					"usecase.tmpl", "usecase", "_usecase.go"); err != nil {
+					return err
+				}
+
+				// Generate Repository layer
+				if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
+					"repository.tmpl", "repository", "_repository.go"); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
