@@ -57,18 +57,18 @@ func main() {
 			for _, service := range f.Services {
 				// Generate SERVICE layer
 				if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
-					"handler.tmpl", "handler", ".go"); err != nil {
+					"server.tmpl", "server", ".go"); err != nil {
 					return err
 				}
 
 				// Uncomment when templates ready:
 				// Generate USECASE layer
-				// if err := generateLayer(gen, f, handler, baseForFile, pathsOpt,
+				// if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
 				//     "usecase.tmpl", "usecase", "_usecase.go"); err != nil {
 				//     return err
 				// }
 				// Generate REPOSITORY layer
-				// if err := generateLayer(gen, f, handler, baseForFile, pathsOpt,
+				// if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
 				//     "repository.tmpl", "repository", "_repository.go"); err != nil {
 				//     return err
 				// }
@@ -94,7 +94,7 @@ func inferBaseFromGoImportPath(f *protogen.File) string {
 
 // generateLayer chooses output placement based on pathsOpt:
 // - "import": writes under proto package dir (gen/<pkg>/...)
-// - "source_relative": writes to repo-root relative paths (e.g., handler/*.go, usecase/*.go)
+// - "source_relative": writes to repo-root relative paths (e.g., service/*.go, usecase/*.go)
 func generateLayer(
 	gen *protogen.Plugin,
 	f *protogen.File,
@@ -102,7 +102,7 @@ func generateLayer(
 	base string,
 	pathsOpt string, // "import" or "source_relative"
 	tmplFile string,
-	subdir string, // e.g., "handler" | "usecase" | "repository"
+	subdir string, // e.g., "service" | "usecase" | "repository"
 	suffix string, // e.g., ".go"
 ) error {
 	lowerName := snakeCase(service.GoName)
@@ -172,12 +172,14 @@ func generateLayer(
 
 	// Package name:
 	// - For "import": use the proto package name (e.g., "hello")
-	// - For "source_relative": use the layer folder name (handler/usecase/repository)
+	// - For "source_relative": use the layer folder name (service/server/usecase/repository)
 	pkgName := string(f.GoPackageName)
 	if pathsOpt != "import" {
 		switch subdir {
-		case "handler":
-			pkgName = "handler"
+		case "service":
+			pkgName = "service"
+		case "server":
+			pkgName = "server"
 		case "usecase":
 			pkgName = "usecase"
 		case "repository":

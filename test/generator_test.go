@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestServiceGeneration(t *testing.T) {
+func TestServerGeneration(t *testing.T) {
 	// Get current working directory
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
@@ -50,18 +50,18 @@ func TestServiceGeneration(t *testing.T) {
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "protoc execution failed: %s", output)
 
-	// Verify handler filename
+	// Verify service filename
 	expectedFilename := "user_service.go"
-	serviceFilePath := filepath.Join(tmpDir, "handler", expectedFilename)
+	serviceFilePath := filepath.Join(tmpDir, "server", expectedFilename)
 	_, err = os.Stat(serviceFilePath)
-	require.NoError(t, err, "handler file %s not found", expectedFilename)
+	require.NoError(t, err, "service file %s not found", expectedFilename)
 
 	// Read generated content
 	generatedContent, err := os.ReadFile(serviceFilePath)
-	require.NoError(t, err, "handler file not found")
+	require.NoError(t, err, "service file not found")
 
 	// Read expected content
-	expectedPath := filepath.Join(cwd, "expected", "handler", "user_service.go")
+	expectedPath := filepath.Join(cwd, "expected", "server", "user_service.go")
 	expectedContent, err := os.ReadFile(expectedPath)
 	require.NoError(t, err, "expected file not found")
 
@@ -70,5 +70,5 @@ func TestServiceGeneration(t *testing.T) {
 	normalizedExpected := strings.TrimSpace(string(expectedContent))
 
 	// Compare normalized content
-	assert.Equal(t, normalizedExpected, normalizedGenerated, "generated handler file does not match expected")
+	assert.Equal(t, normalizedExpected, normalizedGenerated, "generated service file does not match expected")
 }
