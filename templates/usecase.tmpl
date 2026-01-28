@@ -4,12 +4,13 @@ package usecase
 
 import (
 	"context"
+
 	appError "{{.Base}}/error"
-	pb "{{.Base}}/gen/user"
+	pb "{{.Base}}/gen/{{initialLower .ServiceNoSuf}}"
 	"{{.Base}}/repository"
 )
 
-// {{.Service.GoName}}Usecase defines the interface for user business logic
+// {{.Service.GoName}}Usecase defines the interface for {{initialLower .ServiceNoSuf}} business logic
 type {{.Service.GoName}}Usecase interface {
 	// Methods matching the proto service definition
 	{{- range .Service.Methods}}
@@ -19,28 +20,30 @@ type {{.Service.GoName}}Usecase interface {
 
 // {{initialLower .Service.GoName}}Usecase implements {{.Service.GoName}}Usecase interface
 type {{initialLower .Service.GoName}}Usecase struct {
-	{{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.UserEntityORM, uint32]
+	{{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.{{.ServiceNoSuf}}EntityORM, uint32]
 }
 
-// New{{.Service.GoName}}Usecase creates a new user usecase instance
-func New{{.Service.GoName}}Usecase({{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.UserEntityORM, uint32]) {{.Service.GoName}}Usecase {
+// New{{.Service.GoName}}Usecase creates a new {{initialLower .ServiceNoSuf}} usecase instance
+func New{{.Service.GoName}}Usecase({{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.{{.ServiceNoSuf}}EntityORM, uint32]) {{.Service.GoName}}Usecase {
 	return &{{initialLower .Service.GoName}}Usecase{
 		{{initialLower .Service.GoName}}Repo: {{initialLower .Service.GoName}}Repo,
 	}
 }
 
 // Helper method to convert ORM to DTO
-func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTO(orm *pb.UserEntityORM) *pb.UserDTO {
-	return &pb.UserDTO{
-		Name:  orm.Name,
+func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTO(orm *pb.{{.ServiceNoSuf}}EntityORM) *pb.{{.ServiceNoSuf}}DTO {
+	return &pb.{{.ServiceNoSuf}}DTO{
+		Id: orm.Id,
+		Name: orm.Name,
 		Email: orm.Email,
-		Id:    orm.Id,
+		CreatedAt: orm.CreatedAt,
+		UpdatedAt: orm.UpdatedAt,
 	}
 }
 
 // Helper method to convert ORM list to DTO list
-func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTOList(ormRecords []pb.UserEntityORM) []*pb.UserDTO {
-	var dto []*pb.UserDTO
+func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTOList(ormRecords []pb.{{.ServiceNoSuf}}EntityORM) []*pb.{{.ServiceNoSuf}}DTO {
+	var dto []*pb.{{.ServiceNoSuf}}DTO
 	for _, record := range ormRecords {
 		dto = append(dto, u.ormToDTO(&record))
 	}
@@ -51,9 +54,9 @@ func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTOList(ormRecords []pb.
 // {{.GoName}} implements the {{.GoName}} RPC method from the proto service
 func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Context, req *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error) {
 	{{if eq .GoName "CreateUser"}}
-	// Create user entity from DTO
+	// Create entity from DTO
 	dto := req.User
-	entity := &pb.UserEntity{
+	entity := &pb.{{$.ServiceNoSuf}}Entity{
 		Id:        dto.Id,
 		Name:      dto.Name,
 		Email:     dto.Email,
@@ -68,47 +71,46 @@ func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Conte
 	}
 
 	// Save to database using repository
-	newOrm, err := u.userRepo.Create(ctx, &orm)
+	newOrm, err := u.{{initialLower $.Service.GoName}}Repo.Create(ctx, &orm)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.{{.Output.GoIdent.GoName}}{
-		User: &pb.UserDTO{
-			Name:  newOrm.Name,
-			Email: newOrm.Email,
-			Id:    newOrm.Id,
-		},
+		User: u.ormToDTO(newOrm),
 	}, nil
 	{{else if eq .GoName "GetUser"}}
-	// Query database for user using repository
-	orm, err := u.userRepo.GetById(ctx, req.Id)
+	// Query database for entity using repository
+	orm, err := u.{{initialLower $.Service.GoName}}Repo.GetById(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 	if orm == nil {
-		return nil, appError.ErrUserNotFound
+		return nil, appError.Err{{$.ServiceNoSuf}}NotFound
 	}
 
 	return &pb.{{.Output.GoIdent.GoName}}{
 		User: u.ormToDTO(orm),
 	}, nil
 	{{else if eq .GoName "UpdateUser"}}
-	// Get existing user first
-	orm, err := u.userRepo.GetById(ctx, req.User.Id)
+	// Get existing entity first
+	orm, err := u.{{initialLower $.Service.GoName}}Repo.GetById(ctx, req.User.Id)
 	if err != nil {
 		return nil, err
 	}
 	if orm == nil {
-		return nil, appError.ErrUserNotFound
+		return nil, appError.Err{{$.ServiceNoSuf}}NotFound
 	}
 
 	// Update fields
 	orm.Name = req.User.Name
 	orm.Email = req.User.Email
+	{{- if hasField "Description" -}}
+	orm.Description = req.User.Description
+	{{- end -}}
 
 	// Update in database using repository
-	if _, err := u.userRepo.Update(ctx, orm); err != nil {
+	if _, err := u.{{initialLower $.Service.GoName}}Repo.Update(ctx, orm); err != nil {
 		return nil, err
 	}
 
@@ -117,14 +119,14 @@ func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Conte
 	}, nil
 	{{else if eq .GoName "DeleteUser"}}
 	// Delete from database using repository
-	err := u.userRepo.Delete(ctx, req.Id)
+	err := u.{{initialLower $.Service.GoName}}Repo.Delete(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.{{.Output.GoIdent.GoName}}{}, nil
 	{{else if eq .GoName "ListUsers"}}
-	ormRecords, paginator, err := u.userRepo.GetPerPage(
+	ormRecords, paginator, err := u.{{initialLower $.Service.GoName}}Repo.GetPerPage(
 		ctx,
 		req.Pagination.Page,
 		req.Pagination.Limit,

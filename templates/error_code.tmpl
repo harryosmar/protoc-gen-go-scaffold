@@ -3,14 +3,24 @@
 package error
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 )
 
+// generateErrorCode creates a unique error code with the given status code
+func generateErrorCode(statusCode int) string {
+	// Generate UUID v4 and take first 8 characters (uppercase)
+	uuidStr := strings.ToUpper(strings.ReplaceAll(uuid.New().String(), "-", "")[:8])
+	return fmt.Sprintf("ERR%dP%s", statusCode, uuidStr)
+}
+
 var (
 	{{initialLower .Service.GoName}}CodeErrMap = map[CodeErr]CodeErrEntity{
-		Err{{.ServiceNoSuf}}NotFound: {Code: "ERR404P18", Status: http.StatusNotFound, GrpcCode: codes.NotFound, Message: "{{initialLower .ServiceNoSuf}} not found"},
+		Err{{.ServiceNoSuf}}NotFound: {Code: generateErrorCode(404), Status: http.StatusNotFound, GrpcCode: codes.NotFound, Message: "{{initialLower .ServiceNoSuf}} not found"},
 	}
 )
 

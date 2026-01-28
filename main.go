@@ -9,6 +9,8 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/harryosmar/protoc-gen-go-scaffold/templates/helpers"
+
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -144,34 +146,8 @@ func generateMainInit(
 		return fmt.Errorf("error reading embedded template: %w", err)
 	}
 
-	// Template helpers
-	funcs := template.FuncMap{
-		"initialLower": func(s string) string {
-			if s == "" {
-				return s
-			}
-			r := []rune(s)
-			r[0] = []rune(strings.ToLower(string(r[0])))[0]
-			return string(r)
-		},
-		"trimSuffix": strings.TrimSuffix,
-		"lower":      strings.ToLower,
-		"join":       func(parts ...string) string { return strings.Join(parts, "/") },
-		// Qualify a GoIdent with the correct import alias and register import in this file
-		"qual": func(id protogen.GoIdent) string {
-			return g.QualifiedGoIdent(id)
-		},
-		// Return "context.Context" with import registered
-		"ctx": func() string {
-			return g.QualifiedGoIdent(protogen.GoIdent{
-				GoName:       "Context",
-				GoImportPath: "context",
-			})
-		},
-	}
-
 	// Parse template
-	tmpl, err := template.New("main.tmpl").Funcs(funcs).Parse(string(tmplContent))
+	tmpl, err := template.New("main.tmpl").Funcs(helpers.TemplateFunc(g)).Parse(string(tmplContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template (%s): %w", "main.tmpl", err)
 	}
@@ -247,34 +223,19 @@ func generateLayer(
 		return fmt.Errorf("error reading embedded template: %w", err)
 	}
 
-	// Template helpers
-	funcs := template.FuncMap{
-		"initialLower": func(s string) string {
-			if s == "" {
-				return s
-			}
-			r := []rune(s)
-			r[0] = []rune(strings.ToLower(string(r[0])))[0]
-			return string(r)
-		},
-		"trimSuffix": strings.TrimSuffix,
-		"lower":      strings.ToLower,
-		"join":       func(parts ...string) string { return strings.Join(parts, "/") },
-		// Qualify a GoIdent with the correct import alias and register import in this file
-		"qual": func(id protogen.GoIdent) string {
-			return g.QualifiedGoIdent(id)
-		},
-		// Return "context.Context" with import registered
-		"ctx": func() string {
-			return g.QualifiedGoIdent(protogen.GoIdent{
-				GoName:       "Context",
-				GoImportPath: "context",
-			})
-		},
+	// Create custom function map with all required functions
+	funcMap := helpers.TemplateFunc(g)
+
+	// Ensure hasField function is available for templates
+	if _, ok := funcMap["hasField"]; !ok {
+		funcMap["hasField"] = func(fieldName string) bool {
+			// Default implementation for hasField if not provided
+			return true
+		}
 	}
 
 	// Parse template
-	tmpl, err := template.New(tmplFile).Funcs(funcs).Parse(string(tmplContent))
+	tmpl, err := template.New(tmplFile).Funcs(funcMap).Parse(string(tmplContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template (%s): %w", tmplFile, err)
 	}
@@ -305,17 +266,22 @@ func generateLayer(
 		Base         string // base module: e.g., "github.com/harryosmar/protobuf-go"
 		ServiceLower string
 		ServiceNoSuf string // e.g., "Hello" if "HelloHandler"
+		// ORM-related information
+		ORM map[string]interface{}
 	}{
+		Filename:     fileName,
 		Package:      pkgName,
 		Service:      service,
 		ProtoPkg:     string(f.GoImportPath),
 		Base:         base,
 		ServiceLower: lowerName,
 		ServiceNoSuf: strings.TrimSuffix(service.GoName, "Service"),
+		// Add ORM information with dynamically extracted fields
+		ORM: extractORMInfo(f, service),
 	}
 
 	// Execute template
-	if err := tmpl.Execute(g, data); err != nil {
+	if err = tmpl.Execute(g, data); err != nil {
 		return fmt.Errorf("error executing template (%s): %w", tmplFile, err)
 	}
 	return nil
@@ -330,4 +296,70 @@ func snakeCase(s string) string {
 		buf.WriteRune(unicode.ToLower(r))
 	}
 	return buf.String()
+}
+
+// extractORMInfo extracts ORM-related information from the protobuf file and service
+func extractORMInfo(f *protogen.File, service *protogen.Service) map[string]interface{} {
+	// Get the entity name without the "Service" suffix
+	entityName := strings.TrimSuffix(service.GoName, "Service")
+
+	// Find the entity message in the file's messages
+	var entityMessage *protogen.Message
+	for _, msg := range f.Messages {
+		if msg.GoIdent.GoName == entityName+"Entity" || msg.GoIdent.GoName == entityName+"EntityORM" {
+			entityMessage = msg
+			break
+		}
+	}
+
+	// If entity message not found, return minimal information without field assumptions
+	if entityMessage == nil {
+		return map[string]interface{}{
+			"EntityName": entityName + "EntityORM",
+			"DTOName":    entityName + "DTO",
+			"IDType":     "",         // No assumption about ID type
+			"Fields":     []string{}, // No assumption about fields
+		}
+	}
+
+	// Extract fields from the entity message
+	fields := make([]string, 0, len(entityMessage.Fields))
+	for _, field := range entityMessage.Fields {
+		fields = append(fields, field.GoName)
+	}
+
+	// Try to find ID field type if it exists
+	idType := "" // No default assumption
+	for _, field := range entityMessage.Fields {
+		// Look for common ID field names
+		if field.GoName == "Id" || field.GoName == "ID" ||
+			strings.HasSuffix(field.GoName, "Id") || strings.HasSuffix(field.GoName, "ID") {
+			// Get the Go type of the field
+			goType := field.Desc.Kind().String()
+
+			// Map protobuf types to Go types
+			switch goType {
+			case "UINT32":
+				idType = "uint32"
+			case "UINT64":
+				idType = "uint64"
+			case "INT32":
+				idType = "int32"
+			case "INT64":
+				idType = "int64"
+			case "STRING":
+				idType = "string"
+			default:
+				// If we can't determine the type, use string as a safe default
+				idType = "string"
+			}
+		}
+	}
+
+	return map[string]interface{}{
+		"EntityName": entityName + "EntityORM",
+		"DTOName":    entityName + "DTO",
+		"IDType":     idType,
+		"Fields":     fields,
+	}
 }

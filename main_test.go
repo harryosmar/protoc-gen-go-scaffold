@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-func TestGenerationV2(t *testing.T) {
+func TestGeneration(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
@@ -27,13 +27,19 @@ func TestGenerationV2(t *testing.T) {
 
 	descPath := filepath.Join(tmpDir, "desc.pb")
 	protoDir := filepath.Join(cwd, "test", "testdata")
+	thirdPartyDir := filepath.Join(cwd, "third_party")
 
+	// Build the protoc command with proper include paths for third-party imports
 	cmd := exec.Command("protoc",
 		"--descriptor_set_out="+descPath,
 		"--include_imports",
 		"--proto_path="+protoDir,
+		"--proto_path="+thirdPartyDir,
+		"--proto_path="+filepath.Join(cwd),
+		"--proto_path="+filepath.Join(cwd, "third_party", "github.com"),
 		"user.proto",
 	)
+
 	cmd.Dir = protoDir
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "protoc execution failed: %s", output)

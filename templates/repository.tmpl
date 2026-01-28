@@ -3,18 +3,57 @@
 package repository
 
 import (
-	pb "{{.Base}}/gen/user"
+	"context"
+	pb "{{.Base}}/gen/{{initialLower .ServiceNoSuf}}"
 	"gorm.io/gorm"
 )
 
-// {{initialLower .Service.GoName}}RepositoryMySQL implements ServiceRepository interface
-type {{initialLower .Service.GoName}}RepositoryMySQL struct {
-	*BaseGorm[pb.UserEntityORM, uint32]
+// OrderBy defines sorting options for queries
+type OrderBy struct {
+	Field     string
+	Direction string // "asc" or "desc"
 }
 
-// New{{.Service.GoName}}RepositoryMySQL creates a new user repository instance
-func New{{.Service.GoName}}RepositoryMySQL(db *gorm.DB) ServiceRepository[pb.UserEntityORM, uint32] {
+// Where defines filtering conditions for queries
+type Where struct {
+	Field    string
+	Operator string // "=", ">", "<", "like", etc.
+	Value    interface{}
+}
+
+// Paginator holds pagination metadata
+type Paginator struct {
+	Total   int64
+	Page    int32
+	PerPage int32
+}
+
+// ServiceRepository defines the generic repository interface
+type ServiceRepository[T any, ID comparable] interface {
+	// Create creates a new entity
+	Create(ctx context.Context, entity *T) (*T, error)
+	
+	// Update updates an existing entity
+	Update(ctx context.Context, entity *T) (*T, error)
+	
+	// GetById retrieves an entity by ID
+	GetById(ctx context.Context, id ID) (*T, error)
+	
+	// Delete removes an entity by ID
+	Delete(ctx context.Context, id ID) error
+	
+	// GetPerPage retrieves entities with pagination
+	GetPerPage(ctx context.Context, page, perPage int32, orderBy []OrderBy, where []Where) ([]T, Paginator, error)
+}
+
+// {{initialLower .Service.GoName}}RepositoryMySQL implements ServiceRepository interface
+type {{initialLower .Service.GoName}}RepositoryMySQL struct {
+	*BaseGorm[pb.{{.ServiceNoSuf}}EntityORM, uint32]
+}
+
+// New{{.Service.GoName}}RepositoryMySQL creates a new {{initialLower .ServiceNoSuf}} repository instance
+func New{{.Service.GoName}}RepositoryMySQL(db *gorm.DB) ServiceRepository[pb.{{.ServiceNoSuf}}EntityORM, uint32] {
 	return &{{initialLower .Service.GoName}}RepositoryMySQL{
-		NewBaseGorm[pb.UserEntityORM, uint32](db),
+		NewBaseGorm[pb.{{.ServiceNoSuf}}EntityORM, uint32](db),
 	}
 }

@@ -4,24 +4,25 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	appError "{{.Base}}/error"
-	pb "{{.Base}}/gen/user"
+	pb "{{.Base}}/gen/{{initialLower .ServiceNoSuf}}"
 	"{{.Base}}/logger"
 	"{{.Base}}/usecase"
 	"go.uber.org/zap"
 )
 
-// {{.Service.GoName}}Server implements the UserService with usecase pattern
+// {{.Service.GoName}}Server implements the {{.Service.GoName}} with usecase pattern
 type {{.Service.GoName}}Server struct {
 	pb.Unimplemented{{.Service.GoName}}Server
-	userUsecase usecase.{{.Service.GoName}}Usecase
+	{{initialLower .ServiceNoSuf}}Usecase usecase.{{.Service.GoName}}Usecase
 }
 
-// New{{.Service.GoName}}Server creates a new UserServiceServer instance
-func New{{.Service.GoName}}Server(userUsecase usecase.{{.Service.GoName}}Usecase) *{{.Service.GoName}}Server {
+// New{{.Service.GoName}}Server creates a new {{.Service.GoName}}Server instance
+func New{{.Service.GoName}}Server({{initialLower .ServiceNoSuf}}Usecase usecase.{{.Service.GoName}}Usecase) *{{.Service.GoName}}Server {
 	return &{{.Service.GoName}}Server{
-		userUsecase: userUsecase,
+		{{initialLower .ServiceNoSuf}}Usecase: {{initialLower .ServiceNoSuf}}Usecase,
 	}
 }
 
@@ -43,6 +44,6 @@ func (s *{{$.Service.GoName}}Server) {{.GoName}}(ctx context.Context, req *pb.{{
 		return nil, appError.ErrInvalidArgument.WithMessage("validation failed: %v", err)
 	}
 
-	return s.userUsecase.{{.GoName}}(ctx, req)
+	return s.{{initialLower $.ServiceNoSuf}}Usecase.{{.GoName}}(ctx, req)
 }
 {{end}}

@@ -14,14 +14,13 @@ var (
 	}
 )
 
-// InitUserServiceCode registers service-specific error codes in the global error map
 func InitUserServiceCode() {
 	for code, entity := range userServiceCodeErrMap {
 		codeErrMap[code] = entity
 	}
 }
 
-// Error code constants for UserService
+// Error code constants
 const (
 	ErrUserNotFound CodeErr = "ErrUserNotFound"
 )

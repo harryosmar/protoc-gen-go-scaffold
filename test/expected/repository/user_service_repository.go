@@ -3,112 +3,18 @@
 package repository
 
 import (
-	"context"
-	"errors"
-
-	pb "github.com/harryosmar/protobuf-go/gen/user"
+	userpb "github.com/harryosmar/protobuf-go/gen/user"
 	"gorm.io/gorm"
 )
 
-// OrderBy defines sorting options for queries
-type OrderBy struct {
-	Field     string
-	Direction string // "asc" or "desc"
-}
-
-// Where defines filtering conditions for queries
-type Where struct {
-	Field    string
-	Operator string // "=", ">", "<", "like", etc.
-	Value    interface{}
-}
-
-// Paginator holds pagination metadata
-type Paginator struct {
-	Total   int64
-	Page    int32
-	PerPage int32
-}
-
-// ServiceRepository defines the generic repository interface
-type ServiceRepository[T any, ID comparable] interface {
-	// Create creates a new entity
-	Create(ctx context.Context, entity *T) (*T, error)
-
-	// Update updates an existing entity
-	Update(ctx context.Context, entity *T) (*T, error)
-
-	// GetById retrieves an entity by ID
-	GetById(ctx context.Context, id ID) (*T, error)
-
-	// Delete removes an entity by ID
-	Delete(ctx context.Context, id ID) error
-
-	// GetPerPage retrieves entities with pagination
-	GetPerPage(ctx context.Context, page, perPage int32, orderBy []OrderBy, where []Where) ([]T, Paginator, error)
-}
-
-// userServiceRepositoryMySQL implements ServiceRepository interface
+// userServiceRepositoryMySQL implements UserServiceRepository interface
 type userServiceRepositoryMySQL struct {
-	db *gorm.DB
+	*BaseGorm[userpb.UserEntityORM, uint32]
 }
 
 // NewUserServiceRepositoryMySQL creates a new user repository instance
-func NewUserServiceRepositoryMySQL(db *gorm.DB) ServiceRepository[pb.UserEntityORM, uint32] {
+func NewUserServiceRepositoryMySQL(db *gorm.DB) ServiceRepository[userpb.UserEntityORM, uint32] {
 	return &userServiceRepositoryMySQL{
-		db: db,
+		NewBaseGorm[userpb.UserEntityORM, uint32](db),
 	}
-}
-
-func (u *userServiceRepositoryMySQL) Create(ctx context.Context, user *pb.UserEntityORM) (*pb.UserEntityORM, int64, error) {
-	var (
-		db = u.db.WithContext(ctx)
-	)
-
-	result := db.Create(user)
-	if result.Error != nil {
-		return nil, 0, result.Error
-	}
-	return user, result.RowsAffected, nil
-}
-
-func (u *userServiceRepository) Update(ctx context.Context, user *pb.UserEntityORM) (*pb.UserEntityORM, int64, error) {
-	var (
-		db = u.db.WithContext(ctx)
-	)
-
-	result := db.Save(user)
-	if result.Error != nil {
-		return nil, 0, result.Error
-	}
-	return user, result.RowsAffected, nil
-}
-
-func (u *userServiceRepository) Get(ctx context.Context, id string) (*pb.UserEntityORM, error) {
-	var (
-		db = u.db.WithContext(ctx)
-	)
-
-	var user pb.UserEntityORM
-	if err := db.First(&user, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (u *userServiceRepository) Delete(ctx context.Context, id int64) (int64, error) {
-	var (
-		db = u.db.WithContext(ctx)
-	)
-
-	result := db.Delete(&pb.UserEntityORM{}, id)
-	if result.Error != nil {
-		return 0, result.Error
-	}
-
-	return result.RowsAffected, nil
 }
