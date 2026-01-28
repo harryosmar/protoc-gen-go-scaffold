@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package validate;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/envoyproxy/protoc-gen-validate/validate;validate";
+
+extend google.protobuf.FieldOptions {
+  // Rules specify the validations to be performed on this field.
+  FieldRules rules = 1071;
+}
+
+extend google.protobuf.MessageOptions {
+  bool disabled = 1071;
+  bool ignored = 1072;
+  bool required = 1073;
+}
+
+// FieldRules encapsulates the rules for each type of field.
+message FieldRules {
+  oneof type {
+    // String represents the rules applied to string values.
+    StringRules string = 1;
+    // Uint32Rules represents the rules applied to uint32 values.
+    Uint32Rules uint32 = 2;
+    // MessageRules represent the rules applied to message values.
+    MessageRules message = 3;
+  }
+}
+
+// StringRules describe the constraints applied to string values.
+message StringRules {
+  // MinLen specifies that this field must be the specified number of
+  // characters (Unicode code points) at a minimum.
+  uint64 min_len = 1;
+  
+  // MaxLen specifies that this field must be the specified number of
+  // characters (Unicode code points) at a maximum.
+  uint64 max_len = 2;
+  
+  // Email specifies that the field must be a valid email address.
+  bool email = 3;
+}
+
+// Uint32Rules describes the constraints applied to uint32 values.
+message Uint32Rules {
+  // Gt specifies that this field must be greater than the specified value.
+  uint32 gt = 1;
+}
+
+// MessageRules describe the constraints applied to embedded message values.
+message MessageRules {
+  // Required specifies that this field must be set.
+  bool required = 1;
+}

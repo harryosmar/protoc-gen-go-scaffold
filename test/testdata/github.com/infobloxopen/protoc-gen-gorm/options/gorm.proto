@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package gorm;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/infobloxopen/protoc-gen-gorm/options;gorm";
+
+// GormFileOptions contains options that can be specified in a proto file to control
+// gorm file-level options.
+extend google.protobuf.FileOptions {
+  GormFileOptions opts = 1001;
+}
+
+// GormMessageOptions contains options that can be specified on a message to control
+// gorm message-level options.
+extend google.protobuf.MessageOptions {
+  GormMessageOptions opts = 1001;
+}
+
+// GormFieldOptions contains options that can be specified on a field to control
+// gorm field-level options.
+extend google.protobuf.FieldOptions {
+  GormFieldOptions field = 1001;
+}
+
+message GormFileOptions {
+  // Deprecated: Use the file-level option in the ORM package
+  string package = 1;
+}
+
+message GormMessageOptions {
+  // Indicates that ORM should be generated for this message
+  bool ormable = 1;
+  // Specifies the table name for the generated model
+  string table = 2;
+}
+
+message GormFieldOptions {
+  // Indicates that this field is a primary key
+  GormTag tag = 1;
+}
+
+message GormTag {
+  // Indicates that this field is a primary key
+  bool primary_key = 1;
+  // Indicates that this field should auto-increment
+  bool auto_increment = 2;
+  // Indicates that this field cannot be null
+  bool not_null = 3;
+  // Specifies the size of the field (for string fields)
+  uint32 size = 4;
+  // Indicates that this field should have a unique index
+  string unique_index = 5;
+}

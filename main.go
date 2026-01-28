@@ -72,6 +72,17 @@ func main() {
 					"repository.tmpl", "repository", "_repository.go"); err != nil {
 					return err
 				}
+
+				// Generate Error Codes
+				if err := generateLayer(gen, f, service, baseForFile, pathsOpt,
+					"error_code.tmpl", "error", "_codes.go"); err != nil {
+					return err
+				}
+
+				// Generate Main init function
+				if err := generateMainInit(gen, f, service, baseForFile, pathsOpt); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
@@ -90,6 +101,104 @@ func inferBaseFromGoImportPath(f *protogen.File) string {
 		return path[:j]
 	}
 	return path
+}
+
+// generateMainInit generates the main.go init function to register error codes
+func generateMainInit(
+	gen *protogen.Plugin,
+	f *protogen.File,
+	service *protogen.Service,
+	base string,
+	pathsOpt string, // "import" or "source_relative"
+) error {
+	lowerName := snakeCase(service.GoName)
+	fileName := "main_init.go"
+
+	var finalPath string
+	var importPathArg protogen.GoImportPath
+
+	if pathsOpt == "import" {
+		// Place under proto package dir to satisfy protogen prefix check
+		pkgRel := string(f.GoImportPath) // e.g., "github.com/.../gen/hello"
+		if base != "" && strings.HasPrefix(pkgRel, base+"/") {
+			pkgRel = strings.TrimPrefix(pkgRel, base+"/") // -> "gen/hello"
+		} else if i := strings.Index(pkgRel, "/gen/"); i != -1 {
+			pkgRel = pkgRel[i+1:] // -> "gen/hello"
+		} else if j := strings.LastIndex(pkgRel, "/"); j != -1 {
+			pkgRel = pkgRel[j+1:] // last segment
+		}
+		finalPath = filepath.Join(pkgRel, fileName)
+		importPathArg = f.GoImportPath // enforce prefix constraint
+	} else {
+		// paths=source_relative -> write to repo root (relative) and disable prefix check
+		finalPath = fileName
+		importPathArg = "" // IMPORTANT: disable prefix check
+	}
+
+	// Register generated file
+	g := gen.NewGeneratedFile(finalPath, importPathArg)
+
+	// Load template
+	tmplContent, err := templateFS.ReadFile("templates/main.tmpl")
+	if err != nil {
+		return fmt.Errorf("error reading embedded template: %w", err)
+	}
+
+	// Template helpers
+	funcs := template.FuncMap{
+		"initialLower": func(s string) string {
+			if s == "" {
+				return s
+			}
+			r := []rune(s)
+			r[0] = []rune(strings.ToLower(string(r[0])))[0]
+			return string(r)
+		},
+		"trimSuffix": strings.TrimSuffix,
+		"lower":      strings.ToLower,
+		"join":       func(parts ...string) string { return strings.Join(parts, "/") },
+		// Qualify a GoIdent with the correct import alias and register import in this file
+		"qual": func(id protogen.GoIdent) string {
+			return g.QualifiedGoIdent(id)
+		},
+		// Return "context.Context" with import registered
+		"ctx": func() string {
+			return g.QualifiedGoIdent(protogen.GoIdent{
+				GoName:       "Context",
+				GoImportPath: "context",
+			})
+		},
+	}
+
+	// Parse template
+	tmpl, err := template.New("main.tmpl").Funcs(funcs).Parse(string(tmplContent))
+	if err != nil {
+		return fmt.Errorf("error parsing template (%s): %w", "main.tmpl", err)
+	}
+
+	// Template data
+	data := struct {
+		Filename     string
+		Package      string
+		Service      *protogen.Service
+		ProtoPkg     string // e.g., "github.com/.../gen/hello"
+		Base         string // base module: e.g., "github.com/harryosmar/protobuf-go"
+		ServiceLower string
+		ServiceNoSuf string // e.g., "Hello" if "HelloHandler"
+	}{
+		Package:      "main",
+		Service:      service,
+		ProtoPkg:     string(f.GoImportPath),
+		Base:         base,
+		ServiceLower: lowerName,
+		ServiceNoSuf: strings.TrimSuffix(service.GoName, "Service"),
+	}
+
+	// Execute template
+	if err := tmpl.Execute(g, data); err != nil {
+		return fmt.Errorf("error executing template (%s): %w", "main.tmpl", err)
+	}
+	return nil
 }
 
 // generateLayer chooses output placement based on pathsOpt:

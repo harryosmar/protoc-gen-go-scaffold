@@ -3,46 +3,46 @@
 package server
 
 import (
-    "context"
-    appError "{{.Base}}/error"
-    pb "{{.Base}}/gen/user"
-    "{{.Base}}/logger"
-    "{{.Base}}/usecase"
+	"context"
+
+	appError "{{.Base}}/error"
+	pb "{{.Base}}/gen/user"
+	"{{.Base}}/logger"
+	"{{.Base}}/usecase"
+	"go.uber.org/zap"
 )
 
-type {{.Service.GoName}}Server interface {
-    {{- range .Service.Methods}}
-    {{.GoName}}(context.Context, *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error)
-    {{- end}}
+// {{.Service.GoName}}Server implements the UserService with usecase pattern
+type {{.Service.GoName}}Server struct {
+	pb.Unimplemented{{.Service.GoName}}Server
+	userUsecase usecase.{{.Service.GoName}}Usecase
 }
 
-type {{initialLower .Service.GoName}}Server struct {
-    pb.UnimplementedUserServiceServer
-    usecase usecase.{{.Service.GoName}}Usecase
-}
-
-func New{{.Service.GoName}}Server(usecase usecase.{{.Service.GoName}}Usecase) {{.Service.GoName}}Server {
-    return &{{initialLower .Service.GoName}}Server{usecase: usecase}
+// New{{.Service.GoName}}Server creates a new UserServiceServer instance
+func New{{.Service.GoName}}Server(userUsecase usecase.{{.Service.GoName}}Usecase) *{{.Service.GoName}}Server {
+	return &{{.Service.GoName}}Server{
+		userUsecase: userUsecase,
+	}
 }
 
 {{range .Service.Methods}}
-func (u *{{initialLower $.Service.GoName}}Server) {{.GoName}}(ctx context.Context, req *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error) {
-    var (
-		err error
+// {{.GoName}} implements the {{.GoName}} RPC method
+func (s *{{$.Service.GoName}}Server) {{.GoName}}(ctx context.Context, req *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error) {
+	var (
 		log = logger.FromContext(ctx)
+		err error
 	)
-	log.Info("{{initialLower $.Service.GoName}}Server.{{.GoName}} called")
-
 	defer func() {
 		if err != nil {
-            log.Error(err.Error())
+			log.Error("{{$.Service.GoName}}Server.{{.GoName}} err", zap.Error(err))
 		}
 	}()
+	log.Info("{{$.Service.GoName}}.{{.GoName}} called", zap.String("req", fmt.Sprintf("%+v", req)))
 
 	if err = req.Validate(); err != nil {
-        return nil, appError.ErrInvalidArgument.WithMessage("validation failed: %v", err)
-    }
+		return nil, appError.ErrInvalidArgument.WithMessage("validation failed: %v", err)
+	}
 
-    return u.usecase.{{.GoName}}(ctx, req)
+	return s.userUsecase.{{.GoName}}(ctx, req)
 }
 {{end}}

@@ -9,46 +9,143 @@ import (
 	"{{.Base}}/repository"
 )
 
+// {{.Service.GoName}}Usecase defines the interface for user business logic
 type {{.Service.GoName}}Usecase interface {
+	// Methods matching the proto service definition
 	{{- range .Service.Methods}}
 	{{.GoName}}(context.Context, *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error)
 	{{- end}}
 }
 
+// {{initialLower .Service.GoName}}Usecase implements {{.Service.GoName}}Usecase interface
 type {{initialLower .Service.GoName}}Usecase struct {
-	repo repository.{{.Service.GoName}}Repository
+	{{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.UserEntityORM, uint32]
 }
 
-func New{{.Service.GoName}}Usecase(repo repository.{{.Service.GoName}}Repository) {{.Service.GoName}}Usecase {
-	return &{{initialLower .Service.GoName}}Usecase{repo: repo}
+// New{{.Service.GoName}}Usecase creates a new user usecase instance
+func New{{.Service.GoName}}Usecase({{initialLower .Service.GoName}}Repo repository.ServiceRepository[pb.UserEntityORM, uint32]) {{.Service.GoName}}Usecase {
+	return &{{initialLower .Service.GoName}}Usecase{
+		{{initialLower .Service.GoName}}Repo: {{initialLower .Service.GoName}}Repo,
+	}
+}
+
+// Helper method to convert ORM to DTO
+func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTO(orm *pb.UserEntityORM) *pb.UserDTO {
+	return &pb.UserDTO{
+		Name:  orm.Name,
+		Email: orm.Email,
+		Id:    orm.Id,
+	}
+}
+
+// Helper method to convert ORM list to DTO list
+func (u *{{initialLower $.Service.GoName}}Usecase) ormToDTOList(ormRecords []pb.UserEntityORM) []*pb.UserDTO {
+	var dto []*pb.UserDTO
+	for _, record := range ormRecords {
+		dto = append(dto, u.ormToDTO(&record))
+	}
+	return dto
 }
 
 {{range .Service.Methods}}
+// {{.GoName}} implements the {{.GoName}} RPC method from the proto service
 func (u *{{initialLower $.Service.GoName}}Usecase) {{.GoName}}(ctx context.Context, req *pb.{{.Input.GoIdent.GoName}}) (*pb.{{.Output.GoIdent.GoName}}, error) {
-	userEntity, err := u.repo.{{.GoName}}(ctx, req)
+	{{if eq .GoName "CreateUser"}}
+	// Create user entity from DTO
+	dto := req.User
+	entity := &pb.UserEntity{
+		Id:        dto.Id,
+		Name:      dto.Name,
+		Email:     dto.Email,
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
+	}
+
+	// Convert to ORM model for database operations
+	orm, err := entity.ToORM(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if userEntity == nil {
-		{{if eq .GoName "GetUser"}}
-		return nil, appError.ErrNotFound
-		{{else}}
-		return &pb.{{.Output.GoIdent.GoName}}{}, nil
-		{{end}}
-	}
 
-	userPb, err := userEntity.ToPB(ctx)
+	// Save to database using repository
+	newOrm, err := u.userRepo.Create(ctx, &orm)
 	if err != nil {
 		return nil, err
 	}
-	if userPb == nil {
-		{{if eq .GoName "GetUser"}}
-		return &pb.CreateUserResponse{}, nil
-		{{else}}
-		return &pb.{{.Output.GoIdent.GoName}}{}, nil
-		{{end}}
+
+	return &pb.{{.Output.GoIdent.GoName}}{
+		User: &pb.UserDTO{
+			Name:  newOrm.Name,
+			Email: newOrm.Email,
+			Id:    newOrm.Id,
+		},
+	}, nil
+	{{else if eq .GoName "GetUser"}}
+	// Query database for user using repository
+	orm, err := u.userRepo.GetById(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if orm == nil {
+		return nil, appError.ErrUserNotFound
 	}
 
-	return userPb, nil
+	return &pb.{{.Output.GoIdent.GoName}}{
+		User: u.ormToDTO(orm),
+	}, nil
+	{{else if eq .GoName "UpdateUser"}}
+	// Get existing user first
+	orm, err := u.userRepo.GetById(ctx, req.User.Id)
+	if err != nil {
+		return nil, err
+	}
+	if orm == nil {
+		return nil, appError.ErrUserNotFound
+	}
+
+	// Update fields
+	orm.Name = req.User.Name
+	orm.Email = req.User.Email
+
+	// Update in database using repository
+	if _, err := u.userRepo.Update(ctx, orm); err != nil {
+		return nil, err
+	}
+
+	return &pb.{{.Output.GoIdent.GoName}}{
+		User: req.User,
+	}, nil
+	{{else if eq .GoName "DeleteUser"}}
+	// Delete from database using repository
+	err := u.userRepo.Delete(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.{{.Output.GoIdent.GoName}}{}, nil
+	{{else if eq .GoName "ListUsers"}}
+	ormRecords, paginator, err := u.userRepo.GetPerPage(
+		ctx,
+		req.Pagination.Page,
+		req.Pagination.Limit,
+		[]repository.OrderBy{},
+		[]repository.Where{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.{{.Output.GoIdent.GoName}}{
+		Users: u.ormToDTOList(ormRecords),
+		Pagination: &pb.PaginationResponse{
+			Total: paginator.Total,
+			Page:  paginator.Page,
+			Limit: paginator.PerPage,
+		},
+	}, nil
+	{{else}}
+	// Default implementation for other methods
+	return &pb.{{.Output.GoIdent.GoName}}{}, nil
+	{{end}}
 }
 {{end}}
