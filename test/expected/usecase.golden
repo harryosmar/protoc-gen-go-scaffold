@@ -1,0 +1,96 @@
+package usecase
+
+import (
+	"context"
+	appError "github.com/example/myapp/error"
+	userpb "github.com/example/myapp/gen/user"
+	"github.com/example/myapp/repository"
+)
+
+// UserUsecase defines the interface for user business logic
+type UserUsecase interface {
+	// Methods matching the proto service definition
+	{CreateUser}(ctx context.Context, req *CreateUserRequestDTO) (*CreateUserResponseDTO, error)
+	{GetUser}(ctx context.Context, req *GetUserRequestDTO) (*GetUserResponse, error)
+}
+
+// userUsecase implements UserUsecase interface
+type userUsecase struct {
+	userRepo repository.ServiceRepository[userpb.UserEntityORM, uint32]
+}
+
+// NewUserUsecase creates a new user usecase instance
+func NewUserUsecase(repo repository.ServiceRepository[userpb.UserEntityORM, uint32]) UserUsecase {
+	return &userUsecase{
+		userRepo: repo,
+	}
+}
+
+// ormToDTO converts ORM model to DTO
+func (u *userUsecase) ormToDTO(orm *userpb.UserEntityORM) *userpb.UserDTO {
+	return &userpb.UserDTO{
+		Name:  orm.Name,
+		Email: orm.Email,
+		Id:    orm.Id,
+	}
+}
+
+// ormToDTOList converts a slice of ORM models to DTO list
+func (u *userUsecase) ormToDTOList(ormRecords []userpb.UserEntityORM) []*userpb.UserDTO {
+	var dtoRecords []*userpb.UserDTO
+	for _, record := range ormRecords {
+		dtoRecords = append(dtoRecords, u.ormToDTO(&record))
+	}
+	return dtoRecords
+}
+
+
+// {CreateUser} implements the {CreateUser} RPC method from the proto service
+func (u *userUsecase) {CreateUser}(ctx context.Context, req *CreateUserRequestDTO) (*CreateUserResponseDTO, error) {
+	// Create user entity from DTO
+	dto := req.User
+	entity := &userpb.UserEntity{
+		Id:        dto.Id,
+		Name:      dto.Name,
+		Email:     dto.Email,
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
+	}
+
+	// Convert to ORM model for database operations
+	userORM, err := entity.ToORM(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to database using repository
+	newUserORM, err := u.userRepo.Create(ctx, &userORM)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.CreateUserResponseDTO{
+		User: &userpb.UserDTO{
+			Name:  newUserORM.Name,
+			Email: newUserORM.Email,
+			Id:    newUserORM.Id,
+		},
+	}, nil
+}
+
+// {GetUser} implements the {GetUser} RPC method from the proto service
+func (u *userUsecase) {GetUser}(ctx context.Context, req *GetUserRequestDTO) (*GetUserResponse, error) {
+	// Query database for user using repository
+	orm, err := u.userRepo.GetById(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if orm == nil {
+		return nil, appError.ErrUserNotFound
+	}
+
+	return &userpb.GetUserResponse{
+		User: u.ormToDTO(orm),
+	}, nil
+}
+

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1c3ac90d-a54c-452b-9e9b-6238688e0e6c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/protoc-gen-go-scaffold.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/error_code_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/user.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repository_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/error_code.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/helpers/template_func.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/main.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/repository.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/server.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/usecase.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/expected/error_code.golden" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/expected/main.golden" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/expected/repository.golden" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/expected/server.golden" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/expected/usecase.golden" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/generator_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/output/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/testdata/user.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_helper.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_utils.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/usecase_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/QUICKSTART.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/generator/handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/generator/repository.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/generator/service.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user.proto" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="true" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="36JVzbL29tmKIqfIZncwd9BoTpp" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "Go Build.go build github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestCodeGeneration in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestComprehensiveGeneration in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestErrorCodeTemplate in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestGeneration in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestGenerationV2 in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestGenerator in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestMainTemplate in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestRepositoryGeneration in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestRepositoryTemplate in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestServerGeneration in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestServerTemplate in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestServiceGeneration in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestServiceGeneration in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestTemplateRendering in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestUsecaseGeneration in github.com/harryosmar/protoc-gen-go-scaffold/test.executor": "Run",
+    "Go Test.TestUsecaseTemplate in github.com/harryosmar/protoc-gen-go-scaffold.executor": "Run",
+    "Go Test.TestUsecaseTemplate in github.com/harryosmar/protoc-gen-go-scaffold/templates.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.GoLinterPluginOnboarding": "true",
+    "RunOnceActivity.GoLinterPluginStorageMigration": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "wip-101",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/harry/go/src/github.com/harryosmar/protoc-gen-go-scaffold/test/testdata",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "go.sdk"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Markdown",
+      "TEXT"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/testdata" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/test/expected" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/test" />
+      <recent name="$PROJECT_DIR$/testdata" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Test.TestGenerator in github.com/harryosmar/protoc-gen-go-scaffold/test">
+    <configuration name="TestErrorCodeTemplate in github.com/harryosmar/protoc-gen-go-scaffold" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="protoc-gen-go-scaffold" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/harryosmar/protoc-gen-go-scaffold" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestErrorCodeTemplate\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestGenerator in github.com/harryosmar/protoc-gen-go-scaffold/test" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="protoc-gen-go-scaffold" />
+      <working_directory value="$PROJECT_DIR$/test" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/harryosmar/protoc-gen-go-scaffold/test" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestGenerator\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestMainTemplate in github.com/harryosmar/protoc-gen-go-scaffold" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="protoc-gen-go-scaffold" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/harryosmar/protoc-gen-go-scaffold" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestMainTemplate\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestRepositoryTemplate in github.com/harryosmar/protoc-gen-go-scaffold" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="protoc-gen-go-scaffold" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/harryosmar/protoc-gen-go-scaffold" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestRepositoryTemplate\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestUsecaseTemplate in github.com/harryosmar/protoc-gen-go-scaffold" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="protoc-gen-go-scaffold" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/harryosmar/protoc-gen-go-scaffold" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestUsecaseTemplate\E$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestGenerator in github.com/harryosmar/protoc-gen-go-scaffold/test" />
+        <item itemvalue="Go Test.TestUsecaseTemplate in github.com/harryosmar/protoc-gen-go-scaffold" />
+        <item itemvalue="Go Test.TestErrorCodeTemplate in github.com/harryosmar/protoc-gen-go-scaffold" />
+        <item itemvalue="Go Test.TestRepositoryTemplate in github.com/harryosmar/protoc-gen-go-scaffold" />
+        <item itemvalue="Go Test.TestMainTemplate in github.com/harryosmar/protoc-gen-go-scaffold" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-3b128438d3f6-4b567d62c776-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-251.25410.140" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-GO-251.25410.140" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1c3ac90d-a54c-452b-9e9b-6238688e0e6c" name="Changes" comment="" />
+      <created>1764724925011</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764724925011</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="DlvErrorBreakpoint" />
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

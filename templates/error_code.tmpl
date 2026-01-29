@@ -1,0 +1,24 @@
+package error
+
+import (
+	"net/http"
+
+	"google.golang.org/grpc/codes"
+)
+
+var (
+	{{initialLower (serviceNoSuf .Service.Name.String)}}CodeErrMap = map[CodeErr]CodeErrEntity{
+		Err{{serviceNoSuf .Service.Name.String}}NotFound: {Code: "ERR404{{serviceNoSuf .Service.Name.String}}{{shortUUID}}", Status: http.StatusNotFound, GrpcCode: codes.NotFound, Message: "{{initialLower (serviceNoSuf .Service.Name.String)}} not found"},
+	}
+)
+
+func Init{{serviceNoSuf .Service.Name.String}}Code() {
+	for code, entity := range {{initialLower (serviceNoSuf .Service.Name.String)}}CodeErrMap {
+		codeErrMap[code] = entity
+	}
+}
+
+// Error code constants
+const (
+	Err{{serviceNoSuf .Service.Name.String}}NotFound CodeErr = "Err{{serviceNoSuf .Service.Name.String}}NotFound"
+)

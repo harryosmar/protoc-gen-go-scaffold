@@ -1,0 +1,18 @@
+package repository
+
+import (
+	{{initialLower (serviceNoSuf .Service.Name.String)}}pb "{{.Import}}"
+	"gorm.io/gorm"
+)
+
+// {{initialLower (serviceNoSuf .Service.Name.String)}}RepositoryMySQL implements {{serviceNoSuf .Service.Name.String}}Repository interface
+type {{initialLower (serviceNoSuf .Service.Name.String)}}RepositoryMySQL struct {
+	*BaseGorm[{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM, uint32]
+}
+
+// New{{serviceNoSuf .Service.Name.String}}RepositoryMySQL creates a new {{initialLower (serviceNoSuf .Service.Name.String)}} repository instance
+func New{{serviceNoSuf .Service.Name.String}}RepositoryMySQL(db *gorm.DB) ServiceRepository[{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM, uint32] {
+	return &{{initialLower (serviceNoSuf .Service.Name.String)}}RepositoryMySQL{
+		NewBaseGorm[{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM, uint32](db),
+	}
+}

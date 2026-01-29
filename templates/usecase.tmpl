@@ -1,0 +1,148 @@
+package usecase
+
+import (
+	"context"
+	appError "{{.Base}}/error"
+	{{initialLower (serviceNoSuf .Service.Name.String)}}pb "{{.Import}}"
+	"{{.Base}}/repository"
+)
+
+// {{serviceNoSuf .Service.Name.String}}Usecase defines the interface for {{initialLower (serviceNoSuf .Service.Name.String)}} business logic
+type {{serviceNoSuf .Service.Name.String}}Usecase interface {
+	// Methods matching the proto service definition
+{{- range .Service.Methods}}
+	{{.Name}}(ctx context.Context, req *{{.Input.Name}}) (*{{.Output.Name}}, error)
+{{- end}}
+}
+
+// {{initialLower (serviceNoSuf .Service.Name.String)}}Usecase implements {{serviceNoSuf .Service.Name.String}}Usecase interface
+type {{initialLower (serviceNoSuf .Service.Name.String)}}Usecase struct {
+	{{initialLower (serviceNoSuf .Service.Name.String)}}Repo repository.ServiceRepository[{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM, uint32]
+}
+
+// New{{serviceNoSuf .Service.Name.String}}Usecase creates a new {{initialLower (serviceNoSuf .Service.Name.String)}} usecase instance
+func New{{serviceNoSuf .Service.Name.String}}Usecase(repo repository.ServiceRepository[{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM, uint32]) {{serviceNoSuf .Service.Name.String}}Usecase {
+	return &{{initialLower (serviceNoSuf .Service.Name.String)}}Usecase{
+		{{initialLower (serviceNoSuf .Service.Name.String)}}Repo: repo,
+	}
+}
+
+// ormToDTO converts ORM model to DTO
+func (u *{{initialLower (serviceNoSuf .Service.Name.String)}}Usecase) ormToDTO(orm *{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM) *{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}DTO {
+	return &{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}DTO{
+		Name:  orm.Name,
+		Email: orm.Email,
+		Id:    orm.Id,
+	}
+}
+
+// ormToDTOList converts a slice of ORM models to DTO list
+func (u *{{initialLower (serviceNoSuf .Service.Name.String)}}Usecase) ormToDTOList(ormRecords []{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}EntityORM) []*{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}DTO {
+	var dtoRecords []*{{initialLower (serviceNoSuf .Service.Name.String)}}pb.{{serviceNoSuf .Service.Name.String}}DTO
+	for _, record := range ormRecords {
+		dtoRecords = append(dtoRecords, u.ormToDTO(&record))
+	}
+	return dtoRecords
+}
+
+{{range .Service.Methods}}
+// {{.Name}} implements the {{.Name}} RPC method from the proto service
+func (u *{{initialLower (serviceNoSuf $.Service.Name.String)}}Usecase) {{.Name}}(ctx context.Context, req *{{.Input.Name}}) (*{{.Output.Name}}, error) {
+{{- if eq .Name.String "Create{{$.ServiceName}}" "CreateUser"}}
+	// Create {{initialLower (serviceNoSuf $.Service.Name.String)}} entity from DTO
+	dto := req.{{serviceNoSuf $.Service.Name.String}}
+	entity := &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.{{serviceNoSuf $.Service.Name.String}}Entity{
+		Id:        dto.Id,
+		Name:      dto.Name,
+		Email:     dto.Email,
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
+	}
+
+	// Convert to ORM model for database operations
+	{{initialLower (serviceNoSuf $.Service.Name.String)}}ORM, err := entity.ToORM(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to database using repository
+	new{{serviceNoSuf $.Service.Name.String}}ORM, err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.Create(ctx, &{{initialLower (serviceNoSuf $.Service.Name.String)}}ORM)
+	if err != nil {
+		return nil, err
+	}
+
+	return &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.Create{{serviceNoSuf $.Service.Name.String}}ResponseDTO{
+		{{serviceNoSuf $.Service.Name.String}}: &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.{{serviceNoSuf $.Service.Name.String}}DTO{
+			Name:  new{{serviceNoSuf $.Service.Name.String}}ORM.Name,
+			Email: new{{serviceNoSuf $.Service.Name.String}}ORM.Email,
+			Id:    new{{serviceNoSuf $.Service.Name.String}}ORM.Id,
+		},
+	}, nil
+{{- else if eq .Name.String "Get{{$.ServiceName}}" "GetUser"}}
+	// Query database for {{initialLower (serviceNoSuf $.Service.Name.String)}} using repository
+	orm, err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.GetById(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if orm == nil {
+		return nil, appError.Err{{serviceNoSuf $.Service.Name.String}}NotFound
+	}
+
+	return &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.Get{{serviceNoSuf $.Service.Name.String}}Response{
+		{{serviceNoSuf $.Service.Name.String}}: u.ormToDTO(orm),
+	}, nil
+{{- else if eq .Name.String "Delete{{$.ServiceName}}" "DeleteUser"}}
+	err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.Delete(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.Delete{{serviceNoSuf $.Service.Name.String}}ResponseDTO{}, nil
+{{- else if eq .Name.String "Update{{$.ServiceName}}" "UpdateUser"}}
+	// Get existing {{initialLower (serviceNoSuf $.Service.Name.String)}} first
+	orm, err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.GetById(ctx, req.{{serviceNoSuf $.Service.Name.String}}.Id)
+	if err != nil {
+		return nil, err
+	}
+	if orm == nil {
+		return nil, appError.Err{{serviceNoSuf $.Service.Name.String}}NotFound
+	}
+
+	// Update fields
+	orm.Name = req.{{serviceNoSuf $.Service.Name.String}}.Name
+	orm.Email = req.{{serviceNoSuf $.Service.Name.String}}.Email
+
+	// Update in database using repository
+	if _, err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.Update(ctx, orm); err != nil {
+		return nil, err
+	}
+
+	return &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.Update{{serviceNoSuf $.Service.Name.String}}ResponseDTO{
+		{{serviceNoSuf $.Service.Name.String}}: req.{{serviceNoSuf $.Service.Name.String}},
+	}, nil
+{{- else if eq .Name.String "List{{$.ServiceName}}s" "ListUsers"}}
+	ormRecords, paginator, err := u.{{initialLower (serviceNoSuf $.Service.Name.String)}}Repo.GetPerPage(
+		ctx,
+		req.Pagination.Page,
+		req.Pagination.Limit,
+		[]repository.OrderBy{},
+		[]repository.Where{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.List{{serviceNoSuf $.Service.Name.String}}sResponseDTO{
+		{{serviceNoSuf $.Service.Name.String}}s: u.ormToDTOList(ormRecords),
+		Pagination: &{{initialLower (serviceNoSuf $.Service.Name.String)}}pb.PaginationResponse{
+			Total: paginator.Total,
+			Page:  paginator.Page,
+			Limit: paginator.PerPage,
+		},
+	}, nil
+{{- else}}
+	// TODO: Implement {{.Name}} method
+	return nil, appError.ErrUnimplemented
+{{- end}}
+}
+{{end}}
